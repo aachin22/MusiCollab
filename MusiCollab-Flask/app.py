@@ -27,9 +27,9 @@ class User(db.Model):
 with app.app_context():
     db.create_all()
 
-r1 = User('Hilary', 'hilary', 'pass')
-db.session.add(r1)
-db.session.commit()
+# r1 = User('Hilary', 'hilary', 'pass')
+# db.session.add(r1)
+# db.session.commit()
 
 @app.route('/')
 def hello_world():
@@ -53,11 +53,11 @@ def login():
         user_password = request.args.get('password')
     db_user = User.query.filter_by(email = user_email).first()
     if db_user is None:
-        return {'message': 'Account has not been created', 'response': 404}
+        return {'message': 'Account has not been created'}, 400
     if db_user.password == user_password:
-        return {'message': 'Login successful', 'response': 200}
+        return {'message': 'Login successful', 'response'}, 200
     else:
-        return {'message': 'Wrong password', 'response': 404}
+        return {'message': 'Wrong password'}, 400
 
 @app.route('/create_user', methods = ['POST', 'GET'])
 def create_user():
@@ -69,10 +69,14 @@ def create_user():
         user_name = request.args.get('name')
         user_email = request.args.get('email')
         user_password = request.args.get('password')
-    r = User(user_name, user_email, user_password)
-    db.session.add(r)
-    db.session.commit()
-    return {'message': 'Account creation successful', 'response': 200}
+    db_user = User.query.filter_by(email = user_email).first()
+    if db_user is None:
+        r = User(user_name, user_email, user_password)
+        db.session.add(r)
+        db.session.commit()
+        return {'message': 'Account creation successful'}, 200
+    else:
+        return {'message': 'Account for this email already exists'}, 400
 
 
 # main driver function
